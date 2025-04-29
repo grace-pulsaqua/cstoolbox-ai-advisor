@@ -1,0 +1,24 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# Environment
+.env
+*.env
+
+# Secrets
+*.xlsx
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+#virtualenv folders
+rag_venv/
+venv/
+
+#test notebooks
+*.ipynb
