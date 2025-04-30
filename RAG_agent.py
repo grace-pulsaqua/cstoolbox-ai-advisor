@@ -37,10 +37,8 @@ def load_llm():
     return ChatVertexAI(
         model_name="gemini-1.5-flash",
         temperature=0.25,
-        max_output_tokens=1500
+        max_output_tokens=3100
         )
-
-llm = load_llm()
 
 #load the vector store retrievers
 @st.cache_resource
@@ -77,15 +75,16 @@ def load_vector_stores():
     )
     return content_store.as_retriever(search_kwargs = {"k": 3}), metadata_vector_store.as_retriever(search_kwargs = {"k": 3})
 
-content_retriever, metadata_retriever = load_vector_stores()
-
 # -- Load link mapping CSV --
 @st.cache_data
 def load_links_to_data_files():
     return pd.read_csv("links_to_data_files.csv", delimiter=";")
 
-links_to_data_files_df = load_links_to_data_files()
-
+with st.spinner("Initializing the system, loading the model and data... Please wait."):
+    llm = load_llm()
+    content_retriever, metadata_retriever = load_vector_stores()
+    links_to_data_files_df = load_links_to_data_files()
+    
 # -- Utility Functions to prepare the retrieved documents for readability by the llm--
 
 def prepare_context(content_docs, metadata_docs, max_tokens=1500):
@@ -125,7 +124,7 @@ rag_prompt = ChatPromptTemplate.from_messages([
         "You will be provided relevant context from the database to help you answer. \n"
         "The context includes the title of the original document and a link to that document \n"
         "If the answer to the question is not found in the context, say you don't know the answer and offer to guess, explicitly marking guesses.\n"
-        "Always cite the title and link provided in the context in your answer. \n"
+        "Cite each context document that you used. Do this by citing each document title and link at the bottom of your answer in a separate line. Do not repeat duplicate document titles or links. \n"
         "Answer in the same language as the question.\n"
     ),
     HumanMessagePromptTemplate.from_template(
@@ -145,16 +144,17 @@ def retrieve_docs(state: RAGState) -> RAGState:
     question = state["question"]
     content_docs = content_retriever.invoke(question)
     metadata_docs = metadata_retriever.invoke(question)
-    
     formatted_context = prepare_context(content_docs, metadata_docs)
-    return {"retrieved_docs": formatted_context}
+    state["retrieved_docs"] = formatted_context  # Update state with retrieved docs
+    return state    
 
 def generate_answer(state: RAGState) -> RAGState:
     question = state["question"]
     context = "\n".join(state["retrieved_docs"])
     prompt = rag_prompt.format(context=context,question=question)
     answer = llm.invoke(prompt)
-    return {"answer": answer}
+    state["answer"] = answer  # Update state with the generated answer
+    return state
 
 # -- Build the LangGraph --
 memory = MemorySaver()
@@ -195,13 +195,13 @@ def main():
     )
 
     if user_input:
-        with st.spinner("Processing your question..."):
+        with st.spinner("Processing your question: Searching the database and generating a response..."):
             answer = call_llm(user_input, st.session_state.user_id)
         st.session_state.chat_history.append({"question": user_input, "answer": answer})
         
     if st.session_state.chat_history:
         st.markdown("Conversation History")
-        for chat in st.session_state.chat_history:
+        for chat in reversed(st.session_state.chat_history):
             st.markdown(f"You: {chat['question']}")
             st.markdown(f"Helper: {chat['answer']}")
 
