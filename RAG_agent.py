@@ -1,9 +1,10 @@
 # Citizen Science Resource Helper using LangGraph, VertexAI, and Qdrant
 
 # -- Imports --
+from dotenv import load_dotenv
 import os
 import uuid
-import ast
+import json
 import pandas as pd
 from typing import TypedDict, List
 
@@ -19,6 +20,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 import streamlit as st
 
+load_dotenv()
 
 # This is optional, but if you want to use Langsmith for tracing, you can set the following environment variables
 os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
@@ -27,7 +29,7 @@ os.environ["LANGSMITH_TRACING"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 
 # Initialize Vertex AI API (once per session, requires setup of google cloud authentication:https://cloud.google.com/docs/authentication/set-up-adc-local-dev-environment
-vertexai.init(project= os.getenv("GCLOUD_PROJECT_ID") , location= os.getenv("GCLOUD_REGION")
+vertexai.init(project= os.getenv("GCLOUD_PROJECT_ID") , location= os.getenv("GCLOUD_REGION"))
 
 # set up the LLM with the model name and parameters, make sure the model type is enabled in your Vertex AI project, quotas are set up, and the model is available in your region.
 llm = ChatVertexAI(
@@ -78,16 +80,16 @@ def format_document(content_doc, metadata_doc):
     """Merges the retrieved content with relevant metadata."""
     if content_doc.metadata["_id"] == metadata_doc.metadata["_id"]:
         metadata_string = metadata_doc.page_content
-        metadata_dict = ast.literal_eval(metadata_string)["metadata"]
+        metadata_json = json.loads(metadata_string)
+        metadata_dict = metadata_json["metadata"]
         filename = metadata_dict["filename"]
-        page_number = metadata_dict["page_number"]
         languages = metadata_dict["languages"]
         title = filename.removesuffix(".pdf").removesuffix(".txt").replace("_"," ")
         link = filename_to_link_df[filename_to_link_df['filename'] == filename]['link'].values[0]
     else:
         title, page_number, link = "", "", "Not found"
     content = content_doc.page_content
-    return f"Title: {title}\n page_number: {page_number}\n Content: {content}\n Link: {link}\n"
+    return f"Title: {title}\n Content: {content}\n Link: {link}\n"
 
 def prepare_context(content_docs, metadata_docs, max_tokens=2500):
     """Format context and limit the tokens put into the context."""
@@ -106,12 +108,12 @@ def prepare_context(content_docs, metadata_docs, max_tokens=2500):
 # -- Prompt Template --
 rag_prompt = ChatPromptTemplate.from_messages([
     SystemMessagePromptTemplate.from_template(
-        "You are an assistant for answering questions about citizen science methods, tools, and best practices.\n"
-        "You will be given some pieces of retrieved context to help you answer. The context will include the document title and a link to the document itself\n"
+        "You are a database helper for answering questions about citizen science methods, tools, and best practices based on a database of resources about citizen science.\n"
+        "You will be provided relevant context from the database to help you answer. \n"
+        "The context includes the title of the original document and a link to that document \n"
+        "If the answer to the question is not found in the context, say you don't know the answer and offer to guess, explicitly marking guesses.\n"
+        "Always cite the title and link provided in the context in your answer. \n"
         "Answer in the same language as the question.\n"
-        "If the answer is not found in the context, say you don't know and offer to guess, explicitly marking guesses.\n"
-        "Always end your answer by citing the title and link provided in the context document. \n"
-        "If there is no valid link in the context, search the context for a relevant link to provide. Otherwise, suggest the user search the internet. \n"
     ),
     HumanMessagePromptTemplate.from_template(
         "Context:\n{context}\n \nQuestion:\n{question}"
@@ -130,6 +132,7 @@ def retrieve_docs(state: RAGState) -> RAGState:
     question = state["question"]
     content_docs = content_retriever.invoke(question)
     metadata_docs = metadata_retriever.invoke(question)
+    
     formatted_context = prepare_context(content_docs, metadata_docs)
     return {"retrieved_docs": formatted_context}
 

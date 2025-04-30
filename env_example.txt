@@ -1,0 +1,19 @@
+#This document contains an example of what your .env file could look like:
+
+QDRANT_URL = "https://ADDRESS_code.REGION.PROVIDER.cloud.qdrant.io" #Filling in your ADDRESS_code, REGION and PROVIDER. This can be found in your cluster homepage as 'endpoint'
+QDRANT_API_KEY = "" #An active API key for your QDRANT cluster
+QDRANT_COLLECTION_NAME = "" # enter your collection name here
+QDRANT_PAYLOAD_KEY = "text" # the key in the payload that contains the embedded text, this is the default one when using unstructured.io and the openai text-embedding-3-small model.
+QDRANT_METADATA_KEY = "element_serialized" # the key in the payload that contains the metadata, this is the default one when using unstructured.io and the openai text-embedding-3-small model.
+
+LANGSMITH_API_KEY = "" #An active API key for your langsmith account
+LANGSMITH_PROJECT_NAME = "" #Your langsmith project name
+
+GCLOUD_PROJECT_ID = "" #The project ID of your google cloud project
+GCLOUD_REGION = "europe-west4"#The region of your cloud project and hosted services.
+
+AZURE_OPENAI_API_KEY = "" #Your API key for the azure openAI deployment of your embedding model (text-embedding-3-small in my case)
+AZURE_DEPLOYMENT_NAME = "text-embedding-3-small" # Name of your Azure deployment (not the model name, but can be the same)
+AZURE_ENDPOINT = "https://ADDRESS.cognitiveservices.azure.com/" # Your Azure endpoint link, with ADDRESS filled in
+AZURE_MODEL_NAME = "text-embedding-3-small" # Optional but good to specify
+AZURE_API_VERSION = "2024-02-01" # Make sure this is correct
