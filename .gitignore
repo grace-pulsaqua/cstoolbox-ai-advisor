@@ -13,9 +13,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Streamlit
-.streamlit/
-
 #virtualenv folders
 rag_venv/
 venv/

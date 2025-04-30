@@ -8,6 +8,7 @@ import json
 import pandas as pd
 from typing import TypedDict, List
 import streamlit as st
+st.set_page_config(page_title="Citizen Science Resource Helper", page_icon=":robot_face:",layout="wide")
 
 import vertexai
 from qdrant_client import QdrantClient
@@ -80,7 +81,7 @@ def load_vector_stores():
 def load_links_to_data_files():
     return pd.read_csv("links_to_data_files.csv", delimiter=";")
 
-with st.spinner("Initializing the system, loading the model and data... Please wait."):
+with st.spinner("Loading the system... Please wait."):
     llm = load_llm()
     content_retriever, metadata_retriever = load_vector_stores()
     links_to_data_files_df = load_links_to_data_files()
@@ -124,7 +125,7 @@ rag_prompt = ChatPromptTemplate.from_messages([
         "You will be provided relevant context from the database to help you answer. \n"
         "The context includes the title of the original document and a link to that document \n"
         "If the answer to the question is not found in the context, say you don't know the answer and offer to guess, explicitly marking guesses.\n"
-        "Cite each context document that you used. Do this by citing each document title and link at the bottom of your answer in a separate line. Do not repeat duplicate document titles or links. \n"
+        "Cite each context document that you used by providing the title and link at the bottom of your answer in a separate line for each document. Do not repeat duplicate document titles or links. \n"
         "Answer in the same language as the question.\n"
     ),
     HumanMessagePromptTemplate.from_template(
@@ -182,16 +183,21 @@ def call_llm(question: str, thread_id: str):
 
 # Streamlit UI
 def main():
-    
     if "user_id" not in st.session_state:
         st.session_state.user_id = str(uuid.uuid4()) # Create a new unique thread ID for this conversation session
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
     
     st.title("Citizen Science Resource Helper")
+    instruction = '''🛠️This tool helps you find information about citizen science methods, tools, and best practices.  
+    🔎For example, try asking it questions about how to setup a water quality monitoring initiative, how to find participants for your activity, or what projects already exist for monitoring biodiversity.  
+    📄It will search a database of curated documents for an answer to your question and try to answer based on that.  
+    😞Unfortunately, the chat model does not have any memory right now, so it will not remember what your previous question was. Give as much detail as possible for every question.  
+    ⁉️If you have any questions or feedback, please contact the developer at jonathan.stage@pulsaqua.nl'''
+    st.markdown(instruction)
     
     user_input = st.text_input(
-    "Ask any question about how to do citizen science.\n this tool will search it's database for an appropriate document to answer your question."
+    "Ask your question here:"
     )
 
     if user_input:
@@ -200,10 +206,11 @@ def main():
         st.session_state.chat_history.append({"question": user_input, "answer": answer})
         
     if st.session_state.chat_history:
-        st.markdown("Conversation History")
+        st.markdown("**Conversation History**")
         for chat in reversed(st.session_state.chat_history):
-            st.markdown(f"You: {chat['question']}")
-            st.markdown(f"Helper: {chat['answer']}")
+            with st.container():
+                st.write(f":gray-background[🧑‍💻You:]\n{chat['question']}")
+                st.write(f":gray-background[🤖 Helper:]\n{chat['answer']}")
 
 if __name__ == "__main__":
     main()
