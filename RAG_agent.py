@@ -36,11 +36,13 @@ def set_vertex_credentials():
         json.dump(creds_dict, f)
         temp_path = f.name
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_path
+    return service_account.Credentials.from_service_account_file(temp_path)
 
 @st.cache_resource
 def load_llm() -> "ChatVertexAI":
     """Initializes and returns a VertexAI Chat model."""
-    vertexai.init(project = os.getenv("GCLOUD_PROJECT_ID") , location=os.getenv("GCLOUD_REGION"))
+    credentials = set_vertex_credentials()
+    vertexai.init(project = os.getenv("GCLOUD_PROJECT_ID") , location=os.getenv("GCLOUD_REGION"),credentials=credentials)
     # the import needs to be delayed until after the vertexai.init() call, otherwise it will try to use locally cached credentials which don't exist
     from langchain_google_vertexai import ChatVertexAI
     # set up the LLM with the model name and parameters, make sure the model type is enabled in your Vertex AI project, quotas are set up, and the model is available in your region.
@@ -91,7 +93,6 @@ def load_links_to_data_files():
     return pd.read_csv("links_to_data_files.csv", delimiter=";")
 
 with st.spinner("Loading the system... Please wait."):
-    set_vertex_credentials()
     content_retriever, metadata_retriever = load_vector_stores()
     links_to_data_files_df = load_links_to_data_files()
     llm = load_llm()
