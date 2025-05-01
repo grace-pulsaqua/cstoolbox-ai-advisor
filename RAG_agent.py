@@ -90,7 +90,7 @@ def load_vector_stores():
 # -- Load link mapping CSV --
 @st.cache_data
 def load_links_to_data_files():
-    return pd.read_csv("links_to_data_files.csv", delimiter=";")
+    return pd.read_csv("links_to_data_files.csv", delimiter=",")
 
 with st.spinner("Loading the system... Please wait."):
     content_retriever, metadata_retriever = load_vector_stores()

@@ -18,6 +18,3 @@ Thumbs.db
 #virtualenv folders
 rag_venv/
 venv/
-
-#test notebooks
-*.ipynb
