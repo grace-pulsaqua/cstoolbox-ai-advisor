@@ -4,18 +4,16 @@
 import os
 import uuid
 import json
+import tempfile
 import pandas as pd
 from typing import TypedDict, List
 import streamlit as st
 st.set_page_config(page_title="Citizen Science Resource Helper", page_icon=":robot_face:",layout="wide")
-
 import vertexai
 from google.oauth2 import service_account
 from qdrant_client import QdrantClient
-from langchain_google_vertexai import ChatVertexAI
 from langchain_qdrant import QdrantVectorStore
 from langchain_openai import AzureOpenAIEmbeddings
-
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import MemorySaver
@@ -26,16 +24,26 @@ os.environ["LANGSMITH_PROJECT"] = os.getenv("LANGSMITH_PROJECT")
 os.environ["LANGSMITH_TRACING"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 
-
-# set up the LLM with the model name and parameters, make sure the model type is enabled in your Vertex AI project, quotas are set up, and the model is available in your region.
+# Initialize Vertex AI credentials  when you have downloaded your service account credentials JSON file and entered it in the secrets.toml file: https://discuss.streamlit.io/t/how-to-use-an-entire-json-file-in-the-secrets-app-settings-when-deploying-on-the-community-cloud/49375/2
 @st.cache_resource
-def load_llm():
-    credentials_json = dict(st.secrets["gcloud"]['my_project_settings'])
-    credentials_json["private_key"] = credentials_json["private_key"].replace(",", "\n")
-    credentials = service_account.Credentials.from_service_account_info(credentials_json)
-    # Initialize Vertex AI API when you have downloaded your service account credentials JSON file and entered it in the secrets.toml file: https://discuss.streamlit.io/t/how-to-use-an-entire-json-file-in-the-secrets-app-settings-when-deploying-on-the-community-cloud/49375/2
-    vertexai.init(credentials= credentials)
-    
+def set_vertex_credentials():
+    """Writes service account credentials to a temp file and sets env variable."""
+    creds_dict = dict(st.secrets["gcloud"]["my_project_settings"])
+    creds_dict["private_key"] = creds_dict["private_key"].replace(",", "\n")
+
+    #this way is necessary to circumvent google auth trying to access an environment variable that is not set in the streamlit cloud
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+        json.dump(creds_dict, f)
+        temp_path = f.name
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_path
+
+@st.cache_resource
+def load_llm() -> "ChatVertexAI":
+    """Initializes and returns a VertexAI Chat model."""
+    vertexai.init(project = os.getenv("GCLOUD_PROJECT_ID") , location=os.getenv("GCLOUD_REGION"))
+    # the import needs to be delayed until after the vertexai.init() call, otherwise it will try to use locally cached credentials which don't exist
+    from langchain_google_vertexai import ChatVertexAI
+    # set up the LLM with the model name and parameters, make sure the model type is enabled in your Vertex AI project, quotas are set up, and the model is available in your region.
     return ChatVertexAI(
         model_name="gemini-1.5-flash",
         temperature=0.25,
@@ -83,9 +91,10 @@ def load_links_to_data_files():
     return pd.read_csv("links_to_data_files.csv", delimiter=";")
 
 with st.spinner("Loading the system... Please wait."):
-    llm = load_llm()
+    set_vertex_credentials()
     content_retriever, metadata_retriever = load_vector_stores()
     links_to_data_files_df = load_links_to_data_files()
+    llm = load_llm()
     
 # -- Utility Functions to prepare the retrieved documents for readability by the llm--
 
