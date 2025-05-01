@@ -34,7 +34,7 @@ def load_llm():
     credentials_json["private_key"] = credentials_json["private_key"].replace(",", "\n")
     credentials = service_account.Credentials.from_service_account_info(credentials_json)
     # Initialize Vertex AI API when you have downloaded your service account credentials JSON file and entered it in the secrets.toml file: https://discuss.streamlit.io/t/how-to-use-an-entire-json-file-in-the-secrets-app-settings-when-deploying-on-the-community-cloud/49375/2
-    vertexai.init(project= os.getenv("GCLOUD_PROJECT_ID") , location= os.getenv("GCLOUD_REGION"),credentials= credentials)
+    vertexai.init(credentials= credentials)
     
     return ChatVertexAI(
         model_name="gemini-1.5-flash",
