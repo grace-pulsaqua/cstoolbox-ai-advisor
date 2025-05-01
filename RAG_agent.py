@@ -202,8 +202,8 @@ def main():
     st.title("Citizen Science Resource Helper")
     instruction = '''🛠️This tool helps you find information about methods, tools, and best practices for water-related citizen science.  
     🔎For example, try asking it questions about how to setup a water quality monitoring initiative, how to find participants for your activity, or what projects already exist for monitoring biodiversity.  
-    🧠It will search a database of curated documents for an answer to your question and try to answer based on that.
-    📝For a list of documents in the database, check https://github.com/J-na/CS_advisor/blob/main/links_to_data_files.csv
+    🧠It will search a database of curated documents for an answer to your question and try to answer based on that.  
+    📝For a list of documents in the database, check https://github.com/J-na/CS_advisor/blob/main/links_to_data_files.csv  
     😞Unfortunately, the chat model does not have any memory right now, so it will not remember what your previous question was. Give as much detail as possible for every question.  
     ⁉️If you have any questions or feedback, please contact the developer at jonathan.stage@pulsaqua.nl'''
     st.markdown(instruction)
