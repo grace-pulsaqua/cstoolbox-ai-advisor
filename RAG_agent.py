@@ -120,7 +120,7 @@ def prepare_context(content_docs, metadata_docs, max_tokens=1500):
         link = link_row['link'].values[0] if not link_row.empty else "Not found"
         content = content_doc.page_content
         
-        formatted_doc = (f"Title: {title}\n Content: {content}\n Link: {link}")
+        formatted_doc = (f"Title: {title}\n Content: {content}\n Link: {link}\n")
         
         doc_tokens = len(formatted_doc.split())  # Simple word count as proxy
         if token_counter + doc_tokens > max_tokens:
@@ -132,10 +132,10 @@ def prepare_context(content_docs, metadata_docs, max_tokens=1500):
 # -- Prompt Template --
 rag_prompt = ChatPromptTemplate.from_messages([
     SystemMessagePromptTemplate.from_template(
-        "You are a database helper for answering questions about citizen science methods, tools, and best practices based on a database of resources about citizen science.\n"
+        "You are a database helper for answering questions about citizen science methods, tools, and best practices using a database of resources about citizen science.\n"
         "You will be provided relevant context from the database to help you answer. \n"
+        "If the answer to the question is not found in the context, answer with your best guess but say that you are guessing.\n"
         "The context includes the title of the original document and a link to that document \n"
-        "If the answer to the question is not found in the context, say you don't know the answer and offer to guess, explicitly marking guesses.\n"
         "Cite each context document that you used by providing the title and link at the bottom of your answer in a separate line for each document. Do not repeat duplicate document titles or links. \n"
         "Answer in the same language as the question.\n"
     ),
@@ -202,7 +202,7 @@ def main():
     st.title("Citizen Science Resource Helper")
     instruction = '''🛠️This tool helps you find information about methods, tools, and best practices for water-related citizen science.  
     🔎For example, try asking it questions about how to setup a water quality monitoring initiative, how to find participants for your activity, or what projects already exist for monitoring biodiversity.  
-    🧠It will search a database of curated documents for an answer to your question and try to answer based on that.  
+    🧠It will search a database of curated documents for an answer to your question. Links to the documents will be provided in the answer.  
     📝For a list of documents in the database, check https://github.com/J-na/CS_advisor/blob/main/links_to_data_files.csv  
     😞Unfortunately, the chat model does not have any memory right now, so it will not remember what your previous question was. Give as much detail as possible for every question.  
     ⁉️If you have any questions or feedback, please contact the developer at jonathan.stage@pulsaqua.nl'''
