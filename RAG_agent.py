@@ -10,6 +10,7 @@ import streamlit as st
 st.set_page_config(page_title="Citizen Science Resource Helper", page_icon=":robot_face:",layout="wide")
 
 import vertexai
+from google.oauth2 import service_account
 from qdrant_client import QdrantClient
 from langchain_google_vertexai import ChatVertexAI
 from langchain_qdrant import QdrantVectorStore
@@ -27,12 +28,13 @@ os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 
 
 # set up the LLM with the model name and parameters, make sure the model type is enabled in your Vertex AI project, quotas are set up, and the model is available in your region.
-
 @st.cache_resource
 def load_llm():
-    google_credentials = dict(st.secrets["gcloud"]['my_project_settings'])
+    credentials_json = dict(st.secrets["gcloud"]['my_project_settings'])
+    credentials_json["private_key"] = credentials_json["private_key"].replace(",", "\n")
+    credentials = service_account.Credentials.from_service_account_info(credentials_json)
     # Initialize Vertex AI API when you have downloaded your service account credentials JSON file and entered it in the secrets.toml file: https://discuss.streamlit.io/t/how-to-use-an-entire-json-file-in-the-secrets-app-settings-when-deploying-on-the-community-cloud/49375/2
-    vertexai.init(project= os.getenv("GCLOUD_PROJECT_ID") , location= os.getenv("GCLOUD_REGION"),credentials= google_credentials)
+    vertexai.init(project= os.getenv("GCLOUD_PROJECT_ID") , location= os.getenv("GCLOUD_REGION"),credentials= credentials)
     
     return ChatVertexAI(
         model_name="gemini-1.5-flash",
