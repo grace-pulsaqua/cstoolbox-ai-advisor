@@ -8,6 +8,8 @@ __pycache__/
 
 # Secrets
 *.xlsx
+*.json
+.streamlit/secrets.toml
 
 # OS files
 .DS_Store

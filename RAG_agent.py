@@ -1,7 +1,6 @@
 # Citizen Science Resource Helper using LangGraph, VertexAI, and Qdrant
 
 # -- Imports --
-from dotenv import load_dotenv
 import os
 import uuid
 import json
@@ -20,21 +19,21 @@ from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, H
 from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import MemorySaver
 
-load_dotenv()
-
 # This is optional, but if you want to use Langsmith for tracing, you can set the following environment variables
 os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
-os.environ["LANGSMITH_PROJECT"] = os.getenv("LANGSMITH_PROJECT_NAME")
+os.environ["LANGSMITH_PROJECT"] = os.getenv("LANGSMITH_PROJECT")
 os.environ["LANGSMITH_TRACING"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 
-# Initialize Vertex AI API (once per session, requires setup of google cloud authentication:https://cloud.google.com/docs/authentication/set-up-adc-local-dev-environment
-vertexai.init(project= os.getenv("GCLOUD_PROJECT_ID") , location= os.getenv("GCLOUD_REGION"))
 
 # set up the LLM with the model name and parameters, make sure the model type is enabled in your Vertex AI project, quotas are set up, and the model is available in your region.
 
 @st.cache_resource
 def load_llm():
+    google_credentials = dict(st.secrets["gcloud"]['my_project_settings'])
+    # Initialize Vertex AI API when you have downloaded your service account credentials JSON file and entered it in the secrets.toml file: https://discuss.streamlit.io/t/how-to-use-an-entire-json-file-in-the-secrets-app-settings-when-deploying-on-the-community-cloud/49375/2
+    vertexai.init(project= os.getenv("GCLOUD_PROJECT_ID") , location= os.getenv("GCLOUD_REGION"),credentials= google_credentials)
+    
     return ChatVertexAI(
         model_name="gemini-1.5-flash",
         temperature=0.25,
