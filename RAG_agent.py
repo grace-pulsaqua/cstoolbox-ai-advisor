@@ -6,7 +6,7 @@ import pandas as pd
 from typing import TypedDict, List
 import streamlit as st
 st.set_page_config(page_title="Citizen Science Resource Helper", page_icon=":robot_face:",layout="wide")
-import vertexai
+from google import genai
 from google.oauth2 import service_account
 from qdrant_client import QdrantClient
 from langchain_qdrant import QdrantVectorStore
@@ -39,14 +39,15 @@ def get_gcloud_credentials():
     return service_account.Credentials.from_service_account_file(temp_path)
 
 @st.cache_resource
-def load_llm() -> "ChatVertexAI":
+def load_llm():
     """Initializes and returns a VertexAI Chat model."""
     credentials = get_gcloud_credentials()
-    vertexai.init(project = os.getenv("GCLOUD_PROJECT_ID") , location=os.getenv("GCLOUD_REGION"),credentials=credentials)
+    client = genai.Client(vertexai=True, project= os.getenv("GCLOUD_PROJECT_ID"), location= os.getenv("GCLOUD_REGION"), credentials=credentials)
+                          
     # the import needs to be delayed until after the vertexai.init() call, otherwise it will try to use locally cached credentials which don't exist
-    from langchain_google_vertexai import ChatVertexAI
+    from langchain_google_genai import ChatGoogleGenerativeAI
     # set up the LLM with the model name and parameters, make sure the model type is enabled in your Vertex AI project, quotas are set up, and the model is available in your region.
-    return ChatVertexAI(
+    return ChatGoogleGenerativeAI(
         model_name="gemini-1.5-flash",
         temperature=0.25,
         max_output_tokens=1024
