@@ -1,6 +1,3 @@
-# Citizen Science Resource Helper using LangGraph, VertexAI, and Qdrant
-
-# -- Imports --
 import os
 import uuid
 import json
