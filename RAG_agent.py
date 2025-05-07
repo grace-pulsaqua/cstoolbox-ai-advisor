@@ -52,9 +52,10 @@ def load_llm() -> "ChatVertexAI":
     return ChatVertexAI(
         model_name="gemini-1.5-flash",
         temperature=0.25,
-        max_output_tokens=3100
+        max_output_tokens=1024
         )
-    
+
+# Optional function to connect to a google sheet for feedback logging
 @st.cache_resource
 def get_feedback_worksheet():
     credentials = get_gcloud_credentials()
@@ -68,10 +69,9 @@ def get_feedback_worksheet():
         set_with_dataframe(worksheet, pd.DataFrame(columns=["Timestamp", "User ID", "Question", "Answer", "Feedback"]))
         return worksheet
 
-#load the vector store retrievers
+#load the vector store retrievers, make sure you have setup the correct environment variables in the secrets.toml file: https://docs.streamlit.io/streamlit-cloud/deploy/create-secrets
 @st.cache_resource
 def load_vector_stores():
-    #configure the Azure OpenAI embeddings model
     embeddings = AzureOpenAIEmbeddings(
         deployment= os.getenv("AZURE_DEPLOYMENT_NAME"),
         model= os.getenv("AZURE_MODEL_NAME"), 
@@ -81,7 +81,6 @@ def load_vector_stores():
         openai_api_key= os.getenv("AZURE_OPENAI_API_KEY"), 
     )
     
-    #Configure the Qdrant client and endpoint for connecting to the vector stores
     client = QdrantClient(
         url= os.getenv("QDRANT_URL"), 
         api_key = os.getenv("QDRANT_API_KEY")
@@ -94,6 +93,7 @@ def load_vector_stores():
         embedding=embeddings,
         content_payload_key = os.getenv("QDRANT_PAYLOAD_KEY")
     )
+    
     # Metadata retriever (workaround for payload format issues). todo: Find a way to get the metadata in the same retriever call as the content
     metadata_vector_store = QdrantVectorStore(
     client=client,
@@ -103,7 +103,7 @@ def load_vector_stores():
     )
     return content_store.as_retriever(search_kwargs = {"k": 4}), metadata_vector_store.as_retriever(search_kwargs = {"k": 4})
 
-# -- Load link mapping CSV --
+# -- Load link mapping CSV -- This is a manually created file with an online link to each document in the database based on filename. As of 01/05/2025 all the links were live.
 @st.cache_data
 def load_links_to_data_files():
     return pd.read_csv("links_to_data_files.csv", delimiter=",")
@@ -116,15 +116,12 @@ with st.spinner("Loading the system... Please wait."):
     except:
         st.error("There was a problem when connecting to the chat model. We are aware of this problem, and are working on a solution :) Please try again later.")
     
-# -- Utility Functions to prepare the retrieved documents for readability by the llm--
-
 def prepare_context(content_docs, metadata_docs, max_tokens=1500):
     """Format context and limit the amount of words put into the context."""
     formatted_docs = []
     token_counter = 0
     
     for (content_doc, metadata_doc) in zip(content_docs, metadata_docs):
-        #match content and metadata documents by their IDs, otherwise use empty metadata
         if content_doc.metadata["_id"] == metadata_doc.metadata["_id"]:
             try:
                 metadata = json.loads(metadata_doc.page_content)["metadata"]
@@ -141,14 +138,13 @@ def prepare_context(content_docs, metadata_docs, max_tokens=1500):
         
         formatted_doc = (f"Title: {title}\n Content: {content}\n Link: {link}\n")
         
-        doc_tokens = len(formatted_doc.split())  # Simple word count as proxy
+        doc_tokens = len(formatted_doc.split())  
         if token_counter + doc_tokens > max_tokens:
-            break  # Stop adding more docs once near token limit
+            break  
         formatted_docs.append(formatted_doc)
         token_counter += doc_tokens
     return formatted_docs
 
-# -- Prompt Template --
 rag_prompt = ChatPromptTemplate.from_messages([
     SystemMessagePromptTemplate.from_template(
         "You are a database helper for answering questions about citizen science methods, tools, and best practices using a database of resources about citizen science.\n"
@@ -164,19 +160,17 @@ rag_prompt = ChatPromptTemplate.from_messages([
     
 ])
 
-# RAG agent structure
 class RAGState(TypedDict):
     question: str
     retrieved_docs: List[str]
     answer: str
 
-# -- Node Functions --
 def retrieve_docs(state: RAGState) -> RAGState:
     question = state["question"]
     content_docs = content_retriever.invoke(question)
     metadata_docs = metadata_retriever.invoke(question)
     formatted_context = prepare_context(content_docs, metadata_docs)
-    state["retrieved_docs"] = formatted_context  # Update state with retrieved docs
+    state["retrieved_docs"] = formatted_context  
     return state    
 
 def generate_answer(state: RAGState) -> RAGState:
@@ -184,36 +178,31 @@ def generate_answer(state: RAGState) -> RAGState:
     context = "\n".join(state["retrieved_docs"])
     prompt = rag_prompt.format(context=context,question=question)
     answer = llm.invoke(prompt)
-    state["answer"] = answer  # Update state with the generated answer
+    state["answer"] = answer  
     return state
 
-# -- Build the LangGraph --
 memory = MemorySaver()
 graph = StateGraph(RAGState)
 
-# Register nodes
 graph.add_node("retrieve", retrieve_docs)
 graph.add_node("generate", generate_answer)
 
-# Define state transitions
 graph.add_edge(START,"retrieve")
 graph.add_edge("retrieve", "generate")
 graph.add_edge("generate", END)  # End of one cycle
 
-# Compile the graph - todo: figure out how to make the memory functional
+# todo: figure out how to make the memory functional
 rag_graph = graph.compile(checkpointer=memory)
 
-# -- Conversation function --
 def call_llm(question: str, thread_id: str):
     conversation_input = {"question": question}
     config = {"configurable": {"user_id": "1", "thread_id": thread_id}}
     stream = rag_graph.stream(conversation_input,config,stream_mode="values")
     responses = [response["answer"].content for response in stream if "answer" in response]
-    return responses[-1] if responses else "Model error: Unable to return an answer. If you encounter this error, please contact the developer."
+    return responses[-1] if responses else " Model error: We were able to connect to the model, but it did not generate an answer. Try rephrasing your question, if that doesn't work, the code is likely broken in a fundamental way. Please let us know if this is the case."
 
 def save_single_feedback_row(entry):
     worksheet = get_feedback_worksheet()
-
     row = [
         datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         st.session_state.user_id,
@@ -223,10 +212,9 @@ def save_single_feedback_row(entry):
     ]
     worksheet.append_row(row)
 
-# Streamlit UI
 def main():
     if "user_id" not in st.session_state:
-        st.session_state.user_id = str(uuid.uuid4()) # Create a new unique thread ID for this conversation session
+        st.session_state.user_id = str(uuid.uuid4()) 
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
     
@@ -254,7 +242,6 @@ def main():
             st.write(f"🧑‍💻 **You:** {message['question']}")
             st.write(f"🤖 **Helper:** {message['answer']}")
 
-            # Show feedback and auto-save if submitted
             if "feedback" not in message:
                 feedback = st.feedback("How helpful was this answer?",options="stars")
                 if feedback:
