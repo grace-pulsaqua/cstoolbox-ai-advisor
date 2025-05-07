@@ -1,4 +1,4 @@
-#This document contains an example of what your .env file could look like:
+#This document contains an example of what your streamlit secrets.toml file could look like:
 
 QDRANT_URL = "https://ADDRESS_code.REGION.PROVIDER.cloud.qdrant.io" #Filling in your ADDRESS_code, REGION and PROVIDER. This can be found in your cluster homepage as 'endpoint'
 QDRANT_API_KEY = "" #An active API key for your QDRANT cluster

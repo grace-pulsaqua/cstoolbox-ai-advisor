@@ -113,7 +113,7 @@ with st.spinner("Loading the system... Please wait."):
         content_retriever, metadata_retriever = load_vector_stores()
         links_to_data_files_df = load_links_to_data_files()
         llm = load_llm()
-    except AuthenticationError:
+    except:
         st.error("There was a problem when connecting to the chat model. We are aware of this problem, and are working on a solution :) Please try again later.")
     
 # -- Utility Functions to prepare the retrieved documents for readability by the llm--
@@ -268,7 +268,7 @@ def main():
     
     Submitted questions, AI-generated answers, and optional feedback are stored for 14 days for debugging and quality improvement.  
     Feedback is logged anonymously, linked only to a randomly generated session ID.  
-    No personally identifiable information is collected unless you mention this in your question or feedback.  
+    No personally identifiable information is collected unless you included it in your question.  
     By using this app, you are subject to the data handling policies of the mentioned service providers.  
     For more information, contact the developer at jonathanmeijers2000@gmail.com  
     '''
