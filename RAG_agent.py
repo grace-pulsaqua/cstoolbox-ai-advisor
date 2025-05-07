@@ -17,6 +17,9 @@ from langchain_openai import AzureOpenAIEmbeddings
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import MemorySaver
+import gspread
+from gspread_dataframe import set_with_dataframe
+import datetime
 
 # This is optional, but if you want to use Langsmith for tracing, you can set the following environment variables
 os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
@@ -24,9 +27,9 @@ os.environ["LANGSMITH_PROJECT"] = os.getenv("LANGSMITH_PROJECT")
 os.environ["LANGSMITH_TRACING"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 
-# Initialize Vertex AI credentials  when you have downloaded your service account credentials JSON file and entered it in the secrets.toml file: https://discuss.streamlit.io/t/how-to-use-an-entire-json-file-in-the-secrets-app-settings-when-deploying-on-the-community-cloud/49375/2
+# Initialize Google cloud credentials when you have downloaded your service account credentials JSON file and entered it in the secrets.toml file: https://discuss.streamlit.io/t/how-to-use-an-entire-json-file-in-the-secrets-app-settings-when-deploying-on-the-community-cloud/49375/2
 @st.cache_resource
-def set_vertex_credentials():
+def get_gcloud_credentials():
     """Writes service account credentials to a temp file and sets env variable."""
     creds_dict = dict(st.secrets["gcloud"]["my_project_settings"])
     creds_dict["private_key"] = creds_dict["private_key"].replace(",", "\n")
@@ -41,7 +44,7 @@ def set_vertex_credentials():
 @st.cache_resource
 def load_llm() -> "ChatVertexAI":
     """Initializes and returns a VertexAI Chat model."""
-    credentials = set_vertex_credentials()
+    credentials = get_gcloud_credentials()
     vertexai.init(project = os.getenv("GCLOUD_PROJECT_ID") , location=os.getenv("GCLOUD_REGION"),credentials=credentials)
     # the import needs to be delayed until after the vertexai.init() call, otherwise it will try to use locally cached credentials which don't exist
     from langchain_google_vertexai import ChatVertexAI
@@ -51,6 +54,19 @@ def load_llm() -> "ChatVertexAI":
         temperature=0.25,
         max_output_tokens=3100
         )
+    
+@st.cache_resource
+def get_feedback_worksheet():
+    credentials = get_gcloud_credentials()
+    gc = gspread.Client(credentials= credentials, project= os.getenv("GCLOUD_PROJECT_ID"))
+    sh = gc.open("CS_advisor_feedback")
+    
+    try:
+        return sh.worksheet("Feedback")
+    except gspread.exceptions.WorksheetNotFound:
+        worksheet = sh.add_worksheet(title="Feedback", rows=1000, cols=20)
+        set_with_dataframe(worksheet, pd.DataFrame(columns=["Timestamp", "User ID", "Question", "Answer", "Feedback"]))
+        return worksheet
 
 #load the vector store retrievers
 @st.cache_resource
@@ -85,7 +101,7 @@ def load_vector_stores():
     embedding=embeddings,
     content_payload_key = os.getenv("QDRANT_METADATA_KEY")
     )
-    return content_store.as_retriever(search_kwargs = {"k": 3}), metadata_vector_store.as_retriever(search_kwargs = {"k": 3})
+    return content_store.as_retriever(search_kwargs = {"k": 4}), metadata_vector_store.as_retriever(search_kwargs = {"k": 4})
 
 # -- Load link mapping CSV --
 @st.cache_data
@@ -93,9 +109,12 @@ def load_links_to_data_files():
     return pd.read_csv("links_to_data_files.csv", delimiter=",")
 
 with st.spinner("Loading the system... Please wait."):
-    content_retriever, metadata_retriever = load_vector_stores()
-    links_to_data_files_df = load_links_to_data_files()
-    llm = load_llm()
+    try:
+        content_retriever, metadata_retriever = load_vector_stores()
+        links_to_data_files_df = load_links_to_data_files()
+        llm = load_llm()
+    except AuthenticationError:
+        st.error("There was a problem when connecting to the chat model. We are aware of this problem, and are working on a solution :) Please try again later.")
     
 # -- Utility Functions to prepare the retrieved documents for readability by the llm--
 
@@ -192,6 +211,18 @@ def call_llm(question: str, thread_id: str):
     responses = [response["answer"].content for response in stream if "answer" in response]
     return responses[-1] if responses else "Model error: Unable to return an answer. If you encounter this error, please contact the developer."
 
+def save_single_feedback_row(entry):
+    worksheet = get_feedback_worksheet()
+
+    row = [
+        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        st.session_state.user_id,
+        entry["question"],
+        entry["answer"],
+        entry.get("feedback", "")
+    ]
+    worksheet.append_row(row)
+
 # Streamlit UI
 def main():
     if "user_id" not in st.session_state:
@@ -199,13 +230,13 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
     
-    st.title("Citizen Science Resource Helper")
+    st.title("🤖Citizen Science Resource Helper🤖")
     instruction = '''🛠️This tool helps you find information about methods, tools, and best practices for water-related citizen science.  
     🔎For example, try asking it questions about how to setup a water quality monitoring initiative, how to find participants for your activity, or what projects already exist for monitoring biodiversity.  
     🧠It will search a database of curated documents for an answer to your question. Links to the documents will be provided in the answer.  
     📝For a list of documents in the database, check https://github.com/J-na/CS_advisor/blob/main/links_to_data_files.csv  
     😞Unfortunately, the chat model does not have any memory right now, so it will not remember what your previous question was. Give as much detail as possible for every question.  
-    ⁉️If you have any questions or feedback, please contact the developer at jonathan.stage@pulsaqua.nl'''
+    '''
     st.markdown(instruction)
     
     user_input = st.text_input(
@@ -219,10 +250,31 @@ def main():
         
     if st.session_state.chat_history:
         st.markdown("**Conversation History**")
-        for chat in reversed(st.session_state.chat_history):
-            with st.container():
-                st.write(f":gray-background[🧑‍💻You:]\n{chat['question']}")
-                st.write(f":gray-background[🤖 Helper:]\n{chat['answer']}")
+        for message in reversed(st.session_state.chat_history):
+            st.write(f"🧑‍💻 **You:** {message['question']}")
+            st.write(f"🤖 **Helper:** {message['answer']}")
+
+            # Show feedback and auto-save if submitted
+            if "feedback" not in message:
+                feedback = st.feedback("How helpful was this answer?",options="stars")
+                if feedback:
+                    message["feedback"] = feedback
+                    save_single_feedback_row(message)
+                    
+    disclaimer_text = '''
+    This tool uses third-party services to process your questions and generate answers. Specifically:  
+        Google Vertex AI is used to generate responses via the Gemini model.  
+        The OpenAI text-embedding-3-model is used to embed your questions for searching a Qdrant vector database.  
+    
+    Submitted questions, AI-generated answers, and optional feedback are stored for 14 days for debugging and quality improvement.  
+    Feedback is logged anonymously, linked only to a randomly generated session ID.  
+    No personally identifiable information is collected unless you mention this in your question or feedback.  
+    By using this app, you are subject to the data handling policies of the mentioned service providers.  
+    For more information, contact the developer at jonathanmeijers2000@gmail.com  
+    '''
+    
+    with st.expander("📜 Disclaimer"):
+        st.markdown(disclaimer_text)
 
 if __name__ == "__main__":
     main()
