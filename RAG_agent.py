@@ -26,7 +26,6 @@ os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 # Initialize Google cloud credentials when you have downloaded your service account credentials JSON file and entered it in the secrets.toml file: https://discuss.streamlit.io/t/how-to-use-an-entire-json-file-in-the-secrets-app-settings-when-deploying-on-the-community-cloud/49375/2
 @st.cache_resource
 def get_gcloud_credentials(scopes):
-    """Writes service account credentials to a temp file and sets env variable."""
     creds_dict = dict(st.secrets["gcloud"]["my_project_settings"])
     creds_dict["private_key"] = creds_dict["private_key"].replace(",", "\n")
 
@@ -39,7 +38,6 @@ def get_gcloud_credentials(scopes):
 
 @st.cache_resource
 def load_llm():
-    """Initializes and returns a VertexAI Chat model."""
     from langchain_google_genai import ChatGoogleGenerativeAI
     # set up the LLM with the model name and parameters, make sure that you have an api key set in google ai studio: https://aistudio.google.com/apikey
     return ChatGoogleGenerativeAI(
@@ -71,7 +69,6 @@ def load_vector_stores():
     api_key= st.secrets["OPENAI_API_KEY"],
     )
     
-
     #uncomment this block if you want to use azure openai embeddings instead of the default openai embeddings
     #embeddings = AzureOpenAIEmbeddings(
     #    deployment= st.secrets["AZURE_DEPLOYMENT_NAME"],
@@ -110,12 +107,12 @@ def load_links_to_data_files():
     return pd.read_csv("links_to_data_files.csv", delimiter=",")
 
 with st.spinner("Loading the system... Please wait."):
-    #try:
-    content_retriever, metadata_retriever = load_vector_stores()
-    links_to_data_files_df = load_links_to_data_files()
-    llm = load_llm()
-    #except:
-        #st.error("There was a problem when connecting to the chat model. We are aware of this problem, and are working on a solution :) Please try again later.")
+    try:
+        content_retriever, metadata_retriever = load_vector_stores()
+        links_to_data_files_df = load_links_to_data_files()
+        llm = load_llm()
+    except:
+        st.error("There was a problem when connecting to the chat model. We are aware of this problem, and are working on a solution :) Please try again later.")
     
 def prepare_context(content_docs, metadata_docs, max_tokens=1500):
     """Format context and limit the amount of words put into the context."""
@@ -218,7 +215,7 @@ def save_single_feedback_row(message):
         return message["row_id"]
     else:
         worksheet.append_row(row_data)
-        return worksheet.row_count  # return new row number
+        return worksheet.row_count
 
 def submit_message():
     if st.session_state.question_box != "":
