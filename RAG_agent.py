@@ -151,6 +151,7 @@ rag_prompt = ChatPromptTemplate.from_messages([
         "You are a database helper for answering questions about citizen science methods, tools, and best practices using a database of resources about citizen science.\n"
         "You will be provided relevant context from the database to help you answer. \n"
         "If the answer to the question is not found in the context, answer with your best guess but say that you are guessing.\n"
+        "Always try to provide at least 1 practical action that the user could take to get more information about their question.\n"
         "The context includes the title of the original document and a link to that document \n"
         "Cite each context document that you used by providing the title and link at the bottom of your answer in a separate line for each document. Do not repeat duplicate document titles or links. \n"
         "Answer in the same language as the question.\n"
@@ -263,14 +264,15 @@ def main():
         for message in reversed(st.session_state.chat_history):
             st.write(f"🧑‍💻 **You:** {message['question']}")
             st.write(f"🤖 **Helper:** {message['answer']}")
-
+            
             if "feedback" not in message:
-                st.write("How useful was this answer?")
-                feedback = st.feedback("stars", key=f"feedback_{hash(message['question'])}")
-                if feedback:
-                    with st.spinner("Thank you for your feedback! Sending to database ..."):
-                        message["feedback"] = feedback
-                        message["feedback_row_id"] = save_single_feedback_row(message)
-                    
+                with st.container(border= True):
+                    st.write("How useful was this answer?")
+                    feedback = st.feedback("stars", key=f"feedback_{hash(message['question'])}")
+                    if feedback:
+                        with st.spinner("Thank you for your feedback! Sending to database ..."):
+                            message["feedback"] = feedback
+                            message["feedback_row_id"] = save_single_feedback_row(message)
+                                      
 if __name__ == "__main__":
     main()
