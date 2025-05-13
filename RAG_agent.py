@@ -43,7 +43,7 @@ def load_llm():
     return ChatGoogleGenerativeAI(
         google_api_key = st.secrets["GOOGLE_GENAI_API_KEY"],
         model="gemini-2.0-flash-lite",
-        temperature=0.15,
+        temperature=0,
         max_output_tokens=1024
         )
 
