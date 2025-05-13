@@ -150,9 +150,11 @@ rag_prompt = ChatPromptTemplate.from_messages([
         "Try to give an answer of at least 150 words with concrete examples.\n"
         "If the answer to the question is not found in the context, answer with your best guess but say that you are guessing.\n"
         "Always provide at least 1 practical action that the user could take to get more information about their question.\n"
+        "Aways suggest at least 1 follow-up question that the user could ask you to get more information.\n"
         "The context includes the title of the original document and a link to that document \n"
         "Cite each context document that you used by providing the title and link at the bottom of your answer in a separate line for each document. Do not repeat duplicate document titles or links. \n"
         "Answer in the same language as the question and translate relevant context if it is presented in another language than the question.\n"
+        "You have a tendency to reply to Dutch language questions in English. Make sure to check if the question is in Dutch and respond in Dutch if this is the case.\n "
     ),
     HumanMessagePromptTemplate.from_template(
         "Context:\n{context}\n \nQuestion:\n{question}"
@@ -236,6 +238,7 @@ def main():
     🔎For example, try asking it questions about how to setup a water quality monitoring initiative, how to find participants for your activity, or what projects already exist for monitoring biodiversity.  
     🧠It will search a database of curated documents for an answer to your question. Links to the documents will be provided in the answer.  
     📝For a list of documents in the database, check https://github.com/J-na/CS_advisor/blob/main/links_to_data_files.csv  
+    🔠The model works best in English, but it can understand many other European languages if you feel more comfortable asking questions in your native tongue!  
     😞Unfortunately, the chat model does not have any memory right now, so it will not remember what your previous question was. Give as much detail as possible for every question.  
     '''
     st.markdown(instruction)
