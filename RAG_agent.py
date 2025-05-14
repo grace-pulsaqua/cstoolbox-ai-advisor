@@ -245,8 +245,8 @@ def main():
     disclaimer_text = '''
     This tool uses third-party services to process your questions and generate answers.
     By using this app, you are subject to the data handling policies of the mentioned service providers, Specifically:  
-        Google GenAI is used to generate responses via their Gemini-2.0-flash-lite model: https://cloud.google.com/vertex-ai/generative-ai/docs/data-governance
-        The OpenAI text-embedding-3-model is used to embed your questions for searching a vector database: https://openai.com/policies/data-processing-addendum/
+        Google GenAI is used to generate responses via their Gemini-2.0-flash-lite model: https://cloud.google.com/vertex-ai/generative-ai/docs/data-governance  
+        The OpenAI text-embedding-3-model is used to embed your questions for searching a vector database: https://openai.com/policies/data-processing-addendum/  
     
     Submitted questions, AI-generated answers, and optional feedback are stored for 14 days for debugging and quality improvement.  
     No personally identifiable information is collected unless you included it in your question.
