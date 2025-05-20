@@ -146,13 +146,13 @@ def prepare_context(content_docs, metadata_docs, max_tokens=1500):
 rag_prompt = ChatPromptTemplate.from_messages([
     SystemMessagePromptTemplate.from_template(
         "You are a database helper for answering questions about citizen science methods, tools, and best practices using a database of resources about citizen science.\n"
-        "You will be provided relevant context from the database to help you answer. \n"
+        "You will be provided relevant documents from the database to help you answer. \n"
         "Try to give an answer of at least 150 words with concrete examples.\n"
-        "If the answer to the question is not found in the context, answer with your best guess but say that you are guessing.\n"
+        "If the answer to the question is not found in the documents, answer with your best guess but say that you are guessing.\n"
         "Always provide at least 1 practical action that the user could take to get more information about their question.\n"
         "Aways suggest at least 1 follow-up question that the user could ask you to get more information.\n"
-        "The context includes the title of the original document and a link to that document \n"
-        "Cite each context document that you used by providing the title and link at the bottom of your answer in a separate line for each document. Do not repeat duplicate document titles or links. \n"
+        "The provided documents include a title and link to that document \n"
+        "Cite each document that you used by providing the title and link at the bottom of your answer in a separate line for each document. Do not repeat duplicate document titles or links. \n"
         "The question can be asked in many different languages. Give your answer in the same language as the question and translate relevant context if it is presented in another language than the question.\n"
     ),
     HumanMessagePromptTemplate.from_template(
@@ -239,14 +239,15 @@ def main():
     📝For a list of documents in the database, check https://github.com/J-na/CS_advisor/blob/main/links_to_data_files.csv  
     🔠The model works best in English, but it can understand many other European languages if you feel more comfortable asking questions in your native tongue!  
     😞Unfortunately the chat model does not have any memory right now, so it will not remember what your previous question was. Give as much detail as possible for every question.  
+    🔬This tool is still being developed. If you encounter any problems or have ideas to make it better, please let us know at jonathanmeijers2000@gmail.com  
     '''
     st.markdown(instruction)
     
     disclaimer_text = '''
     This tool uses third-party services to process your questions and generate answers.
     By using this app, you are subject to the data handling policies of the mentioned service providers, Specifically:  
-        Google GenAI is used to generate responses via their Gemini-2.0-flash-lite model: https://cloud.google.com/vertex-ai/generative-ai/docs/data-governance  
-        The OpenAI text-embedding-3-model is used to embed your questions for searching a vector database: https://openai.com/policies/data-processing-addendum/  
+    Google GenAI is used to generate responses via their Gemini-2.0-flash-lite model: https://cloud.google.com/vertex-ai/generative-ai/docs/data-governance  
+    The OpenAI text-embedding-3-model is used to embed your questions for searching a vector database: https://openai.com/policies/data-processing-addendum/  
     
     Submitted questions, AI-generated answers, and optional feedback are stored for 14 days for debugging and quality improvement.  
     No personally identifiable information is collected unless you included it in your question.
