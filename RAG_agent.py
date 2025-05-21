@@ -47,7 +47,8 @@ def load_llm():
         max_output_tokens=1024
         )
 
-# Optional function to connect to a google sheet for feedback logging
+# --- GOOGLE SHEET CONNECTION --- 
+# Optional function to connect to a google sheet for feedback logging ---
 @st.cache_resource
 def get_feedback_worksheet():
     credentials = get_gcloud_credentials(["https://www.googleapis.com/auth/spreadsheets"])
@@ -112,7 +113,7 @@ with st.spinner("Loading the system... Please wait."):
         links_to_data_files_df = load_links_to_data_files()
         llm = load_llm()
     except:
-        st.error("There was a problem when connecting to the chat model. We are aware of this problem, and are working on a solution :) Please try again later.")
+        st.error("There was a problem when connecting to the chat model. Please let us know if you encounter this error and we will try to fix it as soon as possble.")
     
 def prepare_context(content_docs, metadata_docs, max_tokens=1500):
     """Format context and limit the amount of words put into the context."""
@@ -161,6 +162,8 @@ rag_prompt = ChatPromptTemplate.from_messages([
     
 ])
 
+# Defining the core functionality of the LLM 
+
 class RAGState(TypedDict):
     question: str
     retrieved_docs: List[str]
@@ -195,6 +198,7 @@ graph.add_edge("generate", END)  # End of one cycle
 # todo: figure out how to make the memory functional
 rag_graph = graph.compile(checkpointer=memory)
 
+#Activate the AI response loop, taking a user question and returning the response
 def call_llm(question: str, thread_id: str):
     conversation_input = {"question": question}
     config = {"configurable": {"user_id": "1", "thread_id": thread_id}}
@@ -202,6 +206,7 @@ def call_llm(question: str, thread_id: str):
     responses = [response["answer"].content for response in stream if "answer" in response]
     return responses[-1] if responses else " Model error: We were able to connect to the model, but it did not generate an answer. Try rephrasing your question, if that doesn't work, the code is likely broken in a fundamental way. Please let us know if this is the case."
 
+# Connects to google sheets to save feedback into google drive
 def save_single_feedback_row(message):
     worksheet = get_feedback_worksheet()
     row_data = [
@@ -219,13 +224,15 @@ def save_single_feedback_row(message):
         worksheet.append_row(row_data)
         return worksheet.row_count
 
+#what happens upon user input
 def submit_message():
     if st.session_state.question_box != "":
         with st.spinner("Processing your question: Searching the database and generating a response..."):
             answer = call_llm(st.session_state.question_box, st.session_state.user_id)
             st.session_state.chat_history.append({"question": st.session_state.question_box, "answer": answer})
-            st.session_state.question_box = ""
+            st.session_state.question_box = "" #clear the question box at the end to avoid repeating the llm call
 
+#Create the streamlit user interface, accept user inputs
 def main():
     if "user_id" not in st.session_state:
         st.session_state.user_id = str(uuid.uuid4()) 
@@ -245,7 +252,7 @@ def main():
     
     disclaimer_text = '''
     This tool uses third-party services to process your questions and generate answers.
-    By using this app, you are subject to the data handling policies of the mentioned service providers, Specifically:  
+    You are subject to the data handling policies of the used service providers, Specifically:  
     Google GenAI is used to generate responses via their Gemini-2.0-flash-lite model: https://cloud.google.com/vertex-ai/generative-ai/docs/data-governance  
     The OpenAI text-embedding-3-model is used to embed your questions for searching a vector database: https://openai.com/policies/data-processing-addendum/  
     
@@ -273,7 +280,7 @@ def main():
                     if feedback:
                         with st.spinner("Thank you for your feedback! Sending to database ..."):
                             message["feedback"] = feedback
-                            message["feedback_row_id"] = save_single_feedback_row(message)
+                            message["feedback_row_id"] = save_single_feedback_row(message) #saving the feedback to google sheets
                                       
 if __name__ == "__main__":
     main()
