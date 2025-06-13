@@ -13,13 +13,7 @@ os.environ["LANGSMITH_PROJECT"] = st.secrets["LANGSMITH_PROJECT"]
 os.environ["LANGSMITH_TRACING"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 
-#       with st.spinner("Loading the system... Please wait."): #Showing a loading spinner while initializing the external resources
-#            try:
-#                call_llm("test", st.session_state.user_id) # This is a dummy call to the LLM to initialize the connection and load the resources. It will not return any answer, but it will ensure that the LLM is loaded and ready to use.
-#            except: # If there is an error while loading the external resources, show a user legible error message
-#                st.error("There was a problem when connecting to the chat model. Please let us know if you encounter this error and we will try to fix it as soon as possble.")
-
-#Create the streamlit user interface, accept user inputs
+#--- STREAMLIT APP SETUP ---
 def main():
     if "user_id" not in st.session_state:
         st.session_state.user_id = str(uuid.uuid4())
