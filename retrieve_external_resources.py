@@ -1,16 +1,17 @@
 # This module contains all the functions needed to connect to the external API resources such as the vector store, the LLM, and the google sheets for feedback logging.
 
+#Downloaded packages
 import streamlit as st
 from google.oauth2 import service_account
 import gspread
 from gspread_dataframe import set_with_dataframe
 import pandas as pd
-
 from qdrant_client import QdrantClient
 from langchain_qdrant import QdrantVectorStore
 from langchain_openai import AzureOpenAIEmbeddings, OpenAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI # We use this instead of VertexAI because the vertexAI package requires grcpio version 1.91 which conflicts with the google sheets package requiring grcpio 1.71. For the purpose of this app there is little difference between the GenAI and vertexAI packages.
 
+#Built-in packages
 import tempfile
 import json
 import os

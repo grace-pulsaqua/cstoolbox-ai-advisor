@@ -1,9 +1,12 @@
+#downloaded packages
 import streamlit as st
 
 st.set_page_config(page_title="Citizen Science Resource Helper", page_icon=":robot_face:",layout="wide")
 
+# Self-coded packages
 from app_functions import save_single_feedback_row, submit_message
 
+#Built-in packages
 import uuid
 import os
 

@@ -1,13 +1,16 @@
 #This module contains the functions and setup for the RAG system itself
 
+#Downloaded packages
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import MemorySaver
 
+#Self-coded packages
+from retrieve_external_resources import load_links_to_data_files,load_vector_stores,load_llm
+
+#Built-in packages
 import json
 from typing import TypedDict, List
-
-from retrieve_external_resources import load_links_to_data_files,load_vector_stores,load_llm
 
 content_retriever, metadata_retriever = load_vector_stores()
 llm = load_llm()

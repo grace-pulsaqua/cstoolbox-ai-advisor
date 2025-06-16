@@ -1,10 +1,14 @@
 # This module contains the high-level functions for the Streamlit app, such as saving feedback to Google Sheets and submitting messages to the LLM.
 
+#Downloaded packages
 import streamlit as st
-import datetime
 
+#Self-coded packages
 from retrieve_external_resources import get_feedback_worksheet
 from llm_functions import call_llm
+
+#Built-in packages
+import datetime
 
 # --- SAVE FEEDBACK TO GOOGLE SHEETS --- saves a single row of feedback to the google sheet. 
 def save_single_feedback_row(message):
