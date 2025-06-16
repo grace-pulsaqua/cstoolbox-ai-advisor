@@ -34,9 +34,9 @@ def load_llm():
     # set up the LLM with the model name and parameters, 
     return ChatGoogleGenerativeAI(
         google_api_key = st.secrets["GOOGLE_GENAI_API_KEY"], # The api key set in google ai studio: https://aistudio.google.com/apikey
-        model="gemini-2.0-flash", # The model to use, this is the most cost-effective model that still gives good results. You can also use "gemini-2.0-pro" for better results, but it is more expensive.
+        model="gemini-2.5-flash-preview-05-20", # The model to use, this is the most cost-effective model that still gives good results. You can also use "gemini-2.0-pro" for better results, but it is more expensive.
         temperature=0, #Temperature controls the randomness of the model's output. 0 means it will always give the same answer to the same question, 1 means it will be more creative and varied.
-        max_output_tokens=1024 # Maximum number of tokens in the output, this is mainly to limit the cost of the API call. It can be increased to allow for more elaborate responses.
+        max_output_tokens=2048 # Maximum number of tokens in the output, this is mainly to limit the cost of the API call. It can be increased to allow for more elaborate responses.
         )
 
 # --- GOOGLE SHEET CONNECTION --- 
