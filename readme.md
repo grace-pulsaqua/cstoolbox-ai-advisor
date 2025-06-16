@@ -2,7 +2,7 @@
 
 ## A functional prototype for aspiring citizen scientists to learn more about water-related citizen science methods and best practices!
 
-This app was built as a part of my Masters' internship with [PULSAQUA](https://www.pulsaqua.com/). It has access to a list of 52 curated resources about water-related citizen science, including general best practices and specific methods. It is built using the [Streamlit](https://streamlit.io/) and [LangGraph](https://www.langchain.com/langgraph) python packages for the user interface and general architecture. In addition, it connects to a [Qdrant](https://qdrant.tech/) vector store database, the [google GenAI](https://cloud.google.com/ai/generative-ai) [Gemini-2.0-flash model](https://deepmind.google/models/gemini/flash/), and the [openAI](https://openai.com/api/) text-embedding-3-small model for operation. 
+This app was built as a part of my Masters' internship with [PULSAQUA](https://www.pulsaqua.com/). It has access to a list of curated resources about water-related citizen science, including general best practices and specific methods. It is built using the [Streamlit](https://streamlit.io/) and [LangGraph](https://www.langchain.com/langgraph) python packages for the user interface and general architecture. In addition, it connects to a [Qdrant](https://qdrant.tech/) vector store database, the [google GenAI](https://cloud.google.com/ai/generative-ai) [Gemini-2.0-flash model](https://deepmind.google/models/gemini/flash/), and the [openAI](https://openai.com/api/) text-embedding-3-small model for operation. 
 
 ## How to use this app?
 

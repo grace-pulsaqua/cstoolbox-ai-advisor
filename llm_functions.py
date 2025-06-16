@@ -12,8 +12,27 @@ from retrieve_external_resources import load_links_to_data_files,load_vector_sto
 import json
 from typing import TypedDict, List
 
+# Get the vector store retrievers and the LLM
 content_retriever, metadata_retriever = load_vector_stores()
 llm = load_llm()
+
+# --- PROMPT TEMPLATE ---Implemented with LangChain to enable LangGraph tracking and easy distinction between system prompt and user prompt.
+rag_prompt = ChatPromptTemplate.from_messages([  
+    SystemMessagePromptTemplate.from_template(
+        "You are a database helper for answering questions about citizen science methods, tools, and best practices using a database of resources about citizen science.\n"
+        "You will be provided relevant documents from the database to help you answer. \n"
+        "Try to give an answer of at least 200 words with concrete examples.\n"
+        "If the answer to the question is not found in the documents, answer with your best guess but say that you are guessing.\n"
+        "Always provide at least 1 practical action that the user could take to get more information about their question.\n"
+        "Aways suggest at least 1 follow-up question that the user could ask you to get more information.\n"
+        "The provided documents include a title and link to that document \n"
+        "Cite each document that you used by providing the title and link at the bottom of your answer in a separate line for each document. Do not repeat duplicate document titles or links. \n"
+        "The question can be asked in many different languages. Give your answer in the same language as the question and translate relevant context if it is presented in another language than the question.\n"
+    ),
+    HumanMessagePromptTemplate.from_template(
+        "Context:\n{context}\n \nQuestion:\n{question}"
+    )
+])
 
 # --- LLM GRAPH SETUP ---
 class RAGState(TypedDict): #Define the properties of the RAG system (these will be used as the state of the graph)
@@ -79,25 +98,6 @@ def prepare_context(content_docs, metadata_docs, max_tokens=1500):
         formatted_docs.append(formatted_doc)
         token_counter += doc_tokens
     return formatted_docs
-
-# --- PROMPT TEMPLATE ---Implemented with LangChain to enable LangGraph tracking and easy distinction between system prompt and user prompt.
-rag_prompt = ChatPromptTemplate.from_messages([  
-    SystemMessagePromptTemplate.from_template(
-        "You are a database helper for answering questions about citizen science methods, tools, and best practices using a database of resources about citizen science.\n"
-        "You will be provided relevant documents from the database to help you answer. \n"
-        "Try to give an answer of at least 200 words with concrete examples.\n"
-        "If the answer to the question is not found in the documents, answer with your best guess but say that you are guessing.\n"
-        "Always provide at least 1 practical action that the user could take to get more information about their question.\n"
-        "Aways suggest at least 1 follow-up question that the user could ask you to get more information.\n"
-        "The provided documents include a title and link to that document \n"
-        "Cite each document that you used by providing the title and link at the bottom of your answer in a separate line for each document. Do not repeat duplicate document titles or links. \n"
-        "The question can be asked in many different languages. Give your answer in the same language as the question and translate relevant context if it is presented in another language than the question.\n"
-    ),
-    HumanMessagePromptTemplate.from_template(
-        "Context:\n{context}\n \nQuestion:\n{question}"
-    )
-    
-])
 
 # --- CALL LLM API ---
 def call_llm(question: str, thread_id: str): #Takes a thread ID - This is not necessary for the current implementation, but it could be useful to track conversation history in the future.
