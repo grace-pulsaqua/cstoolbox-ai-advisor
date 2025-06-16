@@ -6,7 +6,7 @@ This app was built as a part of my Masters' internship with [PULSAQUA](https://w
 
 ## How to use this app?
 
-You can access a live version of the app at [this link](https://csadvisor.streamlit.app/), or clone the repository to host your own version (see the [streamlit website](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app) for more information).
+You can access a live version of the app at [this link](https://csadvisor-3ksupkpvxwspnxpucskewm.streamlit.app/), or clone the repository to host your own version (see the [streamlit website](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app) for more information).
 
 ## How does it work?
 
