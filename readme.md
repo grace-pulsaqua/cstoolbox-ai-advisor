@@ -16,10 +16,11 @@ For more technical information about RAG systems, see the [wikipedia](https://en
 
 ## Can I adapt it for another subject?
 
-This general setup can be replicated for any other subject matter. To do this, go through the following steps:
+This general setup can be replicated for any other subject matter! To do this, go through the following steps:
 - Clone the repository and connect with all the required APIs.
 - Create a qdrant vector store for your database of subject-relevant resources.
 - Adjust the system prompt and streamlit interface to reflect your intended use case.
+- Run your app locally or publish it to the streamlit community cloud.
 
 ## How can it be improved?
 
