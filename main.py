@@ -28,7 +28,7 @@ def main():
     🔎For example, try asking it questions about how to setup a water quality monitoring initiative, how to find participants for your activity, or what projects already exist for monitoring biodiversity.  
     🧠It will search a database of curated documents for an answer to your question. Links to the documents will be provided in the answer.  
     📝For a list of documents in the database, check https://github.com/J-na/CS_advisor/blob/main/links_to_data_files.csv  
-    🤖This tool uses an LLM, which can generate incorrect or biased responses. Feel free to use it for inspiration, but I recommend personally reading the provided sources for more reliable information.
+    🤖This tool uses an LLM, which can generate incorrect or biased responses. Feel free to use it for inspiration, but I recommend personally reading the provided sources for more reliable information.  
     🔠The model works best in English, but it can understand many other European languages if you feel more comfortable asking questions in your native tongue!  
     😞Unfortunately the chat model does not have any memory right now, so it will not remember what your previous question was. Give as much detail as possible for every question.  
     🔬This tool is still being developed. If you encounter any problems or have ideas to make it better, please let us know at jonathanmeijers2000@gmail.com  
