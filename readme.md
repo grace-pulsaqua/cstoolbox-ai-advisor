@@ -1,8 +1,10 @@
+See here for the original project: [github.com/J-na/CS_advisor](https://github.com/J-na/CS_advisor/tree/main)
+
 # An LLM-Based conversational agent for browsing through Citizen Science resources
 
 ## A functional prototype for aspiring citizen scientists to learn more about water-related citizen science methods and best practices!
 
-This app was built as a part of my Masters' internship with [PULSAQUA](https://www.pulsaqua.com/). It has access to a list of curated resources about water-related citizen science, including general best practices and specific methods. It is built using the [Streamlit](https://streamlit.io/) and [LangGraph](https://www.langchain.com/langgraph) python packages for the user interface and general architecture. In addition, it connects to a [Qdrant](https://qdrant.tech/) vector store database, the [google GenAI](https://cloud.google.com/ai/generative-ai) [Gemini-2.0-flash model](https://deepmind.google/models/gemini/flash/), and the [openAI](https://openai.com/api/) text-embedding-3-small model for operation. Finally, it uses the [Google sheets API](https://developers.google.com/workspace/sheets/api/guides/concepts) for collecting user feedback and [LangSmith](https://www.langchain.com/langsmith) for logging interaction traces.
+This app was built as a part of a Masters' internship with [PULSAQUA](https://www.pulsaqua.com/). It has access to a list of curated resources about water-related citizen science, including general best practices and specific methods. It is built using the [Streamlit](https://streamlit.io/) and [LangGraph](https://www.langchain.com/langgraph) python packages for the user interface and general architecture. In addition, it connects to a [Qdrant](https://qdrant.tech/) vector store database, the [google GenAI](https://cloud.google.com/ai/generative-ai) [Gemini-2.0-flash model](https://deepmind.google/models/gemini/flash/), and the [openAI](https://openai.com/api/) text-embedding-3-small model for operation. Finally, it uses the [Google sheets API](https://developers.google.com/workspace/sheets/api/guides/concepts) for collecting user feedback and [LangSmith](https://www.langchain.com/langsmith) for logging interaction traces.
 
 ## How to use this app?
 
@@ -17,14 +19,12 @@ For more technical information about RAG systems, see the [wikipedia](https://en
 ## Can I adapt it for another subject?
 
 This general setup can be replicated for any other subject matter! To do this, go through the following steps:
-- Clone the repository and connect with all the required APIs.
+- Clone the original repository and connect with all the required APIs.
 - Create a qdrant vector store for your database of subject-relevant resources.
 - Adjust the system prompt and streamlit interface to reflect your intended use case.
 - Run your app locally or publish it to the streamlit community cloud.
 
 ## How can it be improved?
-
-I have wrapped up my internship, meaning that I will not be actively working on this app for the forseeable future. If you are keen to improve on this work, I have the following suggestions (ranked in order of my intuitive guess on the effort/reward ratio):
 
 **Use a better model** 
 
