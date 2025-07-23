@@ -17,17 +17,17 @@ import json
 import os
 
 # --- CONNECT TO GOOGLE CLOUD SERVICES --- Initialize Google cloud credentials for accessing google sheets for feedback logging or using vertex AI. This is not necessary when using the google GenAI package to connect to an LLM.
-@st.cache_resource
-def get_gcloud_credentials(scopes):
-    creds_dict = dict(st.secrets["gcloud"]["my_project_settings"]) # Make sure your service account JSON is stored in the secrets.toml file under the key "gcloud" and the subkey "my_project_settings"
-    creds_dict["private_key"] = creds_dict["private_key"].replace(",", "\n") # convert the toml format back to valid JSON
+#@st.cache_resource
+#def get_gcloud_credentials(scopes):
+#    creds_dict = dict(st.secrets["gcloud"]["my_project_settings"]) # Make sure your service account JSON is stored in the secrets.toml file under the key "gcloud" and the subkey "my_project_settings"
+#    creds_dict["private_key"] = creds_dict["private_key"].replace(",", "\n") # convert the toml format back to valid JSON
 
-    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
-        json.dump(creds_dict, f)
-        temp_path = f.name
+#    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+#        json.dump(creds_dict, f)
+#        temp_path = f.name
     #Load the credentials into an environment variable to prevent an issue where google auth tries to access the environment variable instead of using the file path in the function call
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(creds_dict)
-    return service_account.Credentials.from_service_account_file(temp_path, scopes=scopes) # Return a service account object for later use in authentication
+#    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(creds_dict)
+#    return service_account.Credentials.from_service_account_file(temp_path, scopes=scopes) # Return a service account object for later use in authentication
 
 # --- CONNECT TO THE LLM ---
 @st.cache_resource
@@ -35,7 +35,7 @@ def load_llm():
     # set up the LLM with the model name and parameters, 
     return ChatGoogleGenerativeAI(
         google_api_key = st.secrets["GOOGLE_GENAI_API_KEY"], # The api key set in google ai studio: https://aistudio.google.com/apikey
-        model="gemini-2.5-flash-preview-05-20", # The model to use, this is the most cost-effective model that still gives good results. You can also use "gemini-2.0-pro" for better results, but it is more expensive.
+        model="gemini-2.5-flash", # The model to use, this is the most cost-effective model that still gives good results. You can also use "gemini-2.0-pro" for better results, but it is more expensive.
         temperature=0, #Temperature controls the randomness of the model's output. 0 means it will always give the same answer to the same question, 1 means it will be more creative and varied.
         max_output_tokens=2048 # Maximum number of tokens in the output, this is mainly to limit the cost of the API call. It can be increased to allow for more elaborate responses.
         )
@@ -48,7 +48,7 @@ def get_feedback_worksheet():
     gc = gspread.authorize(credentials)
     sh = gc.open_by_key(st.secrets["GSHEET_FEEDBACK_KEY"]) #Make sure your google sheet key is stored in the secrets.toml file 
     try:
-        return sh.worksheet("Feedback")
+        return sh.worksheet("CS Advisor Feedback Log")
     except gspread.exceptions.WorksheetNotFound: #creates a feedback worksheet if it does not exist yet
         worksheet = sh.add_worksheet(title="Feedback", rows=1000, cols=20)
         set_with_dataframe(worksheet, pd.DataFrame(columns=["Timestamp", "User ID", "Question", "Answer", "Feedback"]))

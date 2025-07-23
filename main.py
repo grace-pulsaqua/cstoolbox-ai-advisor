@@ -13,7 +13,7 @@ import os
 # This is optional, but if you want to use Langsmith for tracing, you can set the following environment variables
 os.environ["LANGSMITH_API_KEY"] = st.secrets["LANGSMITH_API_KEY"]
 os.environ["LANGSMITH_PROJECT"] = st.secrets["LANGSMITH_PROJECT"]
-os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_TRACING_V2"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 
 #--- STREAMLIT APP SETUP ---
