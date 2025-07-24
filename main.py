@@ -23,7 +23,7 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
     
-    st.title("🤖Citizen Science Resource Helper🤖")
+    st.title("🤖Citizen Science Resource Advisor🤖")
     instruction = '''🛠️This tool helps you find information about methods, tools, and best practices for water-related citizen science.  
     🔎For example, try asking it questions about how to setup a water quality monitoring initiative, how to find participants for your activity, or what projects already exist for monitoring biodiversity.  
     🧠It will search a database of curated documents for an answer to your question. Links to the documents will be provided in the answer.  

@@ -17,17 +17,17 @@ import json
 import os
 
 # --- CONNECT TO GOOGLE CLOUD SERVICES --- Initialize Google cloud credentials for accessing google sheets for feedback logging or using vertex AI. This is not necessary when using the google GenAI package to connect to an LLM.
-#@st.cache_resource
-#def get_gcloud_credentials(scopes):
-#    creds_dict = dict(st.secrets["gcloud"]["my_project_settings"]) # Make sure your service account JSON is stored in the secrets.toml file under the key "gcloud" and the subkey "my_project_settings"
-#    creds_dict["private_key"] = creds_dict["private_key"].replace(",", "\n") # convert the toml format back to valid JSON
+@st.cache_resource
+def get_gcloud_credentials(scopes):
+    creds_dict = dict(st.secrets["gcloud"]["my_project_settings"]) # Make sure your service account JSON is stored in the secrets.toml file under the key "gcloud" and the subkey "my_project_settings"
+    creds_dict["private_key"] = creds_dict["private_key"].replace(",", "\n") # convert the toml format back to valid JSON
 
-#    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
-#        json.dump(creds_dict, f)
-#        temp_path = f.name
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+        json.dump(creds_dict, f)
+        temp_path = f.name
     #Load the credentials into an environment variable to prevent an issue where google auth tries to access the environment variable instead of using the file path in the function call
-#    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(creds_dict)
-#    return service_account.Credentials.from_service_account_file(temp_path, scopes=scopes) # Return a service account object for later use in authentication
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(creds_dict)
+    return service_account.Credentials.from_service_account_file(temp_path, scopes=scopes) # Return a service account object for later use in authentication
 
 # --- CONNECT TO THE LLM ---
 @st.cache_resource
@@ -57,7 +57,7 @@ def get_feedback_worksheet():
 # --- LOAD VECTOR STORE RETRIEVERS --- 
 @st.cache_resource
 def load_vector_stores():
-    
+    # need to pay for this I think, openai no longer doing free trial credits
     embeddings = OpenAIEmbeddings(
     model="text-embedding-3-small",
     api_key= st.secrets["OPENAI_API_KEY"],
