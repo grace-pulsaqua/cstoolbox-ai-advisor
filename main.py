@@ -4,7 +4,8 @@ import streamlit as st
 st.set_page_config(page_title="Citizen Science Resource Helper", page_icon=":robot_face:",layout="wide")
 
 # Self-coded packages
-from app_functions import save_single_feedback_row, submit_message
+from app_functions import submit_message, save_single_feedback_langsmith
+#, save_single_feedback_row
 
 #Built-in packages
 import uuid
@@ -12,7 +13,7 @@ import os
 
 # This is optional, but if you want to use Langsmith for tracing, you can set the following environment variables
 os.environ["LANGSMITH_API_KEY"] = st.secrets["LANGSMITH_API_KEY"]
-os.environ["LANGSMITH_PROJECT"] = st.secrets["LANGSMITH_PROJECT"]
+os.environ["LANGSMITH_PROJECT"] = st.secrets["LANGSMITH_PROJECT_NAME"]
 os.environ["LANGSMITH_TRACING_V2"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
 
@@ -22,16 +23,18 @@ def main():
         st.session_state.user_id = str(uuid.uuid4())
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
+    if "question_number" not in st.session_state:
+        st.session_state.question_number = 1  # Start from 1
     
     st.title("🤖Citizen Science Resource Advisor🤖")
     instruction = '''🛠️This tool helps you find information about methods, tools, and best practices for water-related citizen science.  
     🔎For example, try asking it questions about how to setup a water quality monitoring initiative, how to find participants for your activity, or what projects already exist for monitoring biodiversity.  
     🧠It will search a database of curated documents for an answer to your question. Links to the documents will be provided in the answer.  
-    📝For a list of documents in the database, check https://github.com/J-na/CS_advisor/blob/main/links_to_data_files.csv  
+    📝For a list of documents in the database, check https://github.com/grace-pulsaqua/cstoolbox-ai-advisor/blob/544d72d5617118c60ebd809b1cac0722b4824df0/links_to_data_files.csv. 
     🤖This tool uses an LLM, which can generate incorrect or biased responses. Feel free to use it for inspiration, but I recommend personally reading the provided sources for more reliable information.  
     🔠The model works best in English, but it can understand many other European languages if you feel more comfortable asking questions in your native tongue!  
     😞Unfortunately the chat model does not have any memory right now, so it will not remember what your previous question was. Give as much detail as possible for every question.  
-    🔬This tool is still being developed. If you encounter any problems or have ideas to make it better, please let us know at jonathanmeijers2000@gmail.com  
+    🔬This tool is still being developed!
     '''
     st.markdown(instruction)
     
@@ -44,13 +47,12 @@ def main():
     Submitted questions, AI-generated answers, and optional feedback are stored for 14 days for debugging and quality improvement.  
     No personally identifiable information is collected unless you included it in your question.
     
-    For more information, contact the developer at jonathanmeijers2000@gmail.com  
     '''
     
     with st.expander("📜 Disclaimer"):
         st.markdown(disclaimer_text)
 
-    st.text_input("Ask your question here:", value="", key = "question_box", on_change= submit_message)
+    st.text_input("Ask your question here:", value="", key="question_box", on_change=submit_message)
 
     if st.session_state.chat_history:
         st.markdown("**Conversation History**")
@@ -59,13 +61,15 @@ def main():
             st.write(f"🤖 **Helper:** {message['answer']}")
             
             if "feedback" not in message:
-                with st.container(border= True):
+                with st.container(border=True):
                     st.write("How useful was this answer?")
                     feedback = st.feedback("stars", key=f"feedback_{hash(message['question'])}")
                     if feedback:
                         with st.spinner("Thank you for your feedback! Sending to database ..."):
                             message["feedback"] = feedback
-                            message["feedback_row_id"] = save_single_feedback_row(message) #saving the feedback to google sheets
+                            message["trace_id"] = st.session_state.chat_history[-1]["trace_id"]
+                            #message["feedback_row_id"] = save_single_feedback_row(message) #saving the feedback to google sheets
+                            save_single_feedback_langsmith(message) # saving the feedback to langsmith logs
                                       
 if __name__ == "__main__":
     main()
