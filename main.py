@@ -26,7 +26,7 @@ def main():
     if "question_number" not in st.session_state:
         st.session_state.question_number = 1  # Start from 1
     
-    st.title("🤖Citizen Science Resource Advisor🤖")
+    st.title("🤖 Citizen Science Resource Advisor 🤖")
     instruction = '''🛠️This tool helps you find information about methods, tools, and best practices for water-related citizen science.  
     🔎For example, try asking it questions about how to setup a water quality monitoring initiative, how to find participants for your activity, or what projects already exist for monitoring biodiversity.  
     🧠It will search a database of curated documents for an answer to your question. Links to the documents will be provided in the answer.  
@@ -41,7 +41,7 @@ def main():
     disclaimer_text = '''
     This tool uses third-party services to process your questions and generate answers.
     You are subject to the data handling policies of the used service providers, Specifically:  
-    Google GenAI is used to generate responses via their Gemini-2.0-flash-lite model: https://cloud.google.com/vertex-ai/generative-ai/docs/data-governance  
+    OpenAI is used to generate responses via their gpt-5-nano model: https://platform.openai.com/docs/models/gpt-5-nano
     The OpenAI text-embedding-3-model is used to embed your questions for searching a vector database: https://openai.com/policies/data-processing-addendum/  
     
     Submitted questions, AI-generated answers, and optional feedback are stored for 14 days for debugging and quality improvement.  

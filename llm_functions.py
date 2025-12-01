@@ -1,7 +1,7 @@
 #This module contains the functions and setup for the RAG system itself
 
 #Downloaded packages
-from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain_core.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import MemorySaver
 

@@ -2,9 +2,9 @@
 
 # Downloaded packages
 import streamlit as st
-from google.oauth2 import service_account
-import gspread
-from gspread_dataframe import set_with_dataframe
+# from google.oauth2 import service_account
+# import gspread
+# from gspread_dataframe import set_with_dataframe
 import pandas as pd
 from qdrant_client import QdrantClient
 from langchain_qdrant import QdrantVectorStore
@@ -52,7 +52,7 @@ def load_llm():
         api_key=st.secrets["OPENAI_API_KEY"],
         model="gpt-5-nano",
         temperature=0,
-        max_output_tokens=2048,
+        max_tokens=2048,
         stream_usage=True
     )
 
