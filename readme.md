@@ -4,11 +4,11 @@ See here for the original project: [github.com/J-na/CS_advisor](https://github.c
 
 ## A functional prototype for aspiring citizen scientists to learn more about water-related citizen science methods and best practices!
 
-This app was built as a part of a Masters' internship with [PULSAQUA](https://www.pulsaqua.com/). It has access to a list of curated resources about water-related citizen science, including general best practices and specific methods. It is built using the [Streamlit](https://streamlit.io/) and [LangGraph](https://www.langchain.com/langgraph) python packages for the user interface and general architecture. In addition, it connects to a [Qdrant](https://qdrant.tech/) vector store database, the [google GenAI](https://cloud.google.com/ai/generative-ai) [Gemini-2.0-flash model](https://deepmind.google/models/gemini/flash/), and the [openAI](https://openai.com/api/) text-embedding-3-small model for operation. Finally, it uses the [Google sheets API](https://developers.google.com/workspace/sheets/api/guides/concepts) for collecting user feedback and [LangSmith](https://www.langchain.com/langsmith) for logging interaction traces.
+This app was built as a part of a Masters' internship with [PULSAQUA](https://www.pulsaqua.com/). It has access to a list of curated resources about water-related citizen science, including general best practices and specific methods. It is built using the [Streamlit](https://streamlit.io/) and [LangGraph](https://www.langchain.com/langgraph) python packages for the user interface and general architecture. In addition, it connects to a [Qdrant](https://qdrant.tech/) vector store database, the [google GenAI](https://cloud.google.com/ai/generative-ai) [Gemini-2.0-flash model](https://deepmind.google/models/gemini/flash/), and the [openAI](https://openai.com/api/) text-embedding-3-small model for operation. Finally, it uses [LangSmith](https://www.langchain.com/langsmith) for logging interaction traces and feedback.
 
 ## How to use this app?
 
-You can access a live version of the app at [this link](https://csadvisor-3ksupkpvxwspnxpucskewm.streamlit.app/), or clone the repository to host your own version (see the [streamlit website](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app) for more information).
+You can access a live version of the app at [this link](https://https://cs-advisor.streamlit.app/), or clone the repository to host your own version (see LICENSE.txt for the full code license and see the [streamlit website](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app) for more information on setting up your own version).
 
 ## How does it work?
 
