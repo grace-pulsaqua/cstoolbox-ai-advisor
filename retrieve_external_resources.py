@@ -51,7 +51,7 @@ def load_llm():
     return ChatOpenAI(
         api_key=st.secrets["OPENAI_API_KEY"],
         model="gpt-5-nano",
-        max_output_tokens=512,
+        max_tokens=512,
         stream_usage=True
     )
 
