@@ -11,6 +11,10 @@ from app_functions import submit_message, save_single_feedback_langsmith
 import uuid
 import os
 
+import openai
+import langchain
+import langchain_openai
+
 print("openai:", openai.__version__)
 print("langchain:", langchain.__version__)
 print("langchain_openai:", langchain_openai.__version__)
