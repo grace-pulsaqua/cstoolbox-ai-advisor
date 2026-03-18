@@ -50,8 +50,8 @@ def load_llm():
     # set up the LLM with the model name and parameters,
     return ChatOpenAI(
         api_key=st.secrets["OPENAI_API_KEY"],
-        model="gpt-5-nano",
-        max_tokens=512,
+        model="gpt-5-mini",
+        max_tokens=256,
         stream_usage=True
     )
 
@@ -111,8 +111,8 @@ def load_vector_stores():
         embedding=embeddings,
         content_payload_key=st.secrets["QDRANT_METADATA_KEY"]
     )
-    return content_store.as_retriever(search_kwargs={"k": 3}), metadata_vector_store.as_retriever(
-        search_kwargs={"k": 3})
+    return content_store.as_retriever(search_kwargs={"k": 2}), metadata_vector_store.as_retriever(
+        search_kwargs={"k": 2})
 
 
 # -- Load link mapping CSV -- This is a manually created file with an online link to each document in the database based on filename. As of 01/05/2025 all the links were live.
