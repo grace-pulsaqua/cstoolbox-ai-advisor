@@ -11,14 +11,6 @@ from app_functions import submit_message, save_single_feedback_langsmith
 import uuid
 import os
 
-import openai
-import langchain
-import langchain_openai
-
-print("openai:", openai.__version__)
-print("langchain:", langchain.__version__)
-print("langchain_openai:", langchain_openai.__version__)
-
 # This is optional, but if you want to use Langsmith for tracing, you can set the following environment variables
 os.environ["LANGSMITH_API_KEY"] = st.secrets["LANGSMITH_API_KEY"]
 os.environ["LANGSMITH_PROJECT"] = st.secrets["LANGSMITH_PROJECT_NAME"]
